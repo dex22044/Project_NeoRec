@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Обработка фото</title>
+        <script>
+
+let fileObj;
+
+async function uploadAndDoShit() {
+    console.log('doing shit');
+    let resp = await fetch('http://localhost:8091/process_1', {method: 'POST', body: fileObj});
+    if(!resp.ok) return;
+    bl = await resp.blob();
+    console.log(bl);
+    if(document.querySelector('img').src) URL.revokeObjectURL(document.querySelector('img').src);
+    document.querySelector('img').src = URL.createObjectURL(bl);
+}
+
+        </script>
+    </head>
+    <body>
+        <input type="file">
+        <button onclick="uploadAndDoShit()">do shit</button>
+        <img>
+
+        <script>
+document.querySelector('input[type=file]').addEventListener('change', event => {
+    const file = event.target.files[0];
+    if (!file.type) {
+        status.textContent = 'Error: The File.type property does not appear to be supported on this browser.';
+        return;
+    }
+    if (!file.type.match('image.*')) {
+        status.textContent = 'Error: The selected file does not appear to be an image.'
+        return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener('load', event => {
+        fileObj = event.target.result;
+    });
+    reader.readAsArrayBuffer(file);
+}); 
+        </script>
+    </body>
+</html>
