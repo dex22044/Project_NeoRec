@@ -22,7 +22,7 @@ char* buf;
 
 int main() {
     CascadeClassifier cc("./haarcascade_frontalface_alt.xml");
-    Ptr<EigenFaceRecognizer> faceRecogn = EigenFaceRecognizer::create(480);
+    Ptr<EigenFaceRecognizer> faceRecogn = EigenFaceRecognizer::create(80);
     std::vector<Mat> faces;
     std::vector<int> labels;
 
@@ -69,16 +69,18 @@ int main() {
         int flags = fcntl(clientSock, F_GETFL, 0);
         flags |= O_NONBLOCK;
         fcntl(clientSock, F_SETFL, flags);
-        usleep(1000);
+        usleep(100000);
         int totalRd = 0;
         int rd = 0;
-        while((rd = recv(clientSock, buf + totalRd, 8192, 0)) > 0) {
+        while((rd = recv(clientSock, buf + totalRd, 32768, 0)) > 0) {
             totalRd += rd;
-            usleep(100);
+            usleep(1000);
         }
         std::string s(buf, buf + totalRd);
         HttpRequest req = ParseRequest(s);
-        std::cout << "User-Agent: " << req.headers["User-Agent"] << std::endl;
+        for(auto h : req.headers) {
+            std::cout << "HEADER " << h.first << " = " << h.second << std::endl;
+        }
 
         if(req.path == "/") {
             std::ifstream ifs("./index.html");
@@ -101,6 +103,12 @@ int main() {
             std::string respd = CreateHttpResponse(img_proc_1(req, cc, faceRecogn, names));
             send(clientSock, respd.c_str(), respd.size(), 0);
         }
+
+        if(req.path == "/process_2") {
+            std::string respd = CreateHttpResponse(img_proc_2(req, cc, faceRecogn, names));
+            send(clientSock, respd.c_str(), respd.size(), 0);
+        }
+
         close(clientSock);
     }
 }

@@ -8,12 +8,17 @@ let fileObj;
 
 async function uploadAndDoShit() {
     console.log('doing shit');
-    let resp = await fetch('http://localhost:8091/process_1', {method: 'POST', body: fileObj});
+    let resp = await fetch('http://localhost:8000/process_1', {method: 'POST', body: fileObj});
     if(!resp.ok) return;
     bl = await resp.blob();
     console.log(bl);
     if(document.querySelector('img').src) URL.revokeObjectURL(document.querySelector('img').src);
     document.querySelector('img').src = URL.createObjectURL(bl);
+
+    let resp2 = await fetch('http://localhost:8000/process_2', {method: 'POST', body: fileObj});
+    if(!resp2.ok) return;
+    data = await resp2.json();
+    console.log(data);
 }
 
         </script>
