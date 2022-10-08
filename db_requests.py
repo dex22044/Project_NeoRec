@@ -71,6 +71,28 @@ def getPosts():
         tt.append({'id':i[0], 'lat':i[1], 'lon':i[2], 'address':i[3]})
     return tt
 
+def getOrderFromSender(senderId, postId):
+    cursor = db_connection.cursor()
+    cursor.execute(f"SELECT id FROM deliveries WHERE (from_user = {senderId} and from_post = {postId} and status = 0)")
+    ids = cursor.fetchall()
+    return (ids[0][0] if len(ids) != 0 else -1)
+
+def getOrderFromReceiver(recvId, postId):
+    cursor = db_connection.cursor()
+    cursor.execute(f"SELECT id FROM deliveries WHERE (to_user = {recvId} and to_post = {postId} and status = 1)")
+    ids = cursor.fetchall()
+    return (ids[0][0] if len(ids) != 0 else -1)
+
+def sentDelivery(id, postId):
+    cursor = db_connection.cursor()
+    cursor.execute(f"UPDATE deliveries SET status = 1 WHERE (id = {id} and from_post = {postId} and status = 0)")
+    db_connection.commit()
+
+def recvdDelivery(id, postId):
+    cursor = db_connection.cursor()
+    cursor.execute(f"UPDATE deliveries SET status = 2 WHERE (id = {id} and to_post = {postId} and status = 1)")
+    db_connection.commit()
+
 
 def closeDB():
     db_connection.close()

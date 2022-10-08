@@ -13,6 +13,10 @@ connectToDB()
 
 findUserByEmail("a@b.c")
 
+postTokens = [
+    'AMNKJgii34ohtfio3rmnwiuhcJOPHBUIVNUWREFJo34guytif'
+]
+
 def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler):
     server_address = ('', 8000)
     httpd = server_class(server_address, handler_class)
@@ -132,6 +136,96 @@ class HttpHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(str(delId).encode('utf-8'))
                 return
+
+
+        if self.path == '/get_delivery_from_sender':
+            content_length = int(self.headers['Content-Length'])
+            retdata = self.rfile.read(content_length)
+            rcvData = retdata.decode('utf-8').strip().split(';')
+            print(rcvData)
+            if len(rcvData) == 2:
+                postToken = rcvData[0]
+                if postToken not in postTokens:
+                    self.send_response(403)
+                    self.send_header('Content-Type', 'text/plain')
+                    self.end_headers()
+                    self.wfile.write('Post unauthorized\r\n'.encode('utf-8'))
+                    return
+                senderId = int(rcvData[1])
+                delivId = getOrderFromSender(senderId, postTokens.index(postToken) + 1)
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(str(delivId).encode('utf-8'))
+                return
+
+
+        if self.path == '/get_delivery_from_receiver':
+            content_length = int(self.headers['Content-Length'])
+            retdata = self.rfile.read(content_length)
+            rcvData = retdata.decode('utf-8').strip().split(';')
+            print(rcvData)
+            if len(rcvData) == 2:
+                postToken = rcvData[0]
+                if postToken not in postTokens:
+                    self.send_response(403)
+                    self.send_header('Content-Type', 'text/plain')
+                    self.end_headers()
+                    self.wfile.write('Post unauthorized\r\n'.encode('utf-8'))
+                    return
+                receiverId = int(rcvData[1])
+                delivId = getOrderFromReceiver(receiverId, postTokens.index(postToken) + 1)
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(str(delivId).encode('utf-8'))
+                return
+
+
+        if self.path == '/delivery_send':
+            content_length = int(self.headers['Content-Length'])
+            retdata = self.rfile.read(content_length)
+            rcvData = retdata.decode('utf-8').strip().split(';')
+            print(rcvData)
+            if len(rcvData) == 2:
+                postToken = rcvData[0]
+                if postToken not in postTokens:
+                    self.send_response(403)
+                    self.send_header('Content-Type', 'text/plain')
+                    self.end_headers()
+                    self.wfile.write('Post unauthorized\r\n'.encode('utf-8'))
+                    return
+                delivId = int(rcvData[1])
+                sentDelivery(delivId, postTokens.index(postToken) + 1)
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/plain')
+                self.end_headers()
+                self.wfile.write('OK'.encode('utf-8'))
+                return
+
+
+        if self.path == '/delivery_received':
+            content_length = int(self.headers['Content-Length'])
+            retdata = self.rfile.read(content_length)
+            rcvData = retdata.decode('utf-8').strip().split(';')
+            print(rcvData)
+            if len(rcvData) == 2:
+                postToken = rcvData[0]
+                if postToken not in postTokens:
+                    self.send_response(403)
+                    self.send_header('Content-Type', 'text/plain')
+                    self.end_headers()
+                    self.wfile.write('Post unauthorized\r\n'.encode('utf-8'))
+                    return
+                delivId = int(rcvData[1])
+                recvdDelivery(delivId, postTokens.index(postToken) + 1)
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/plain')
+                self.end_headers()
+                self.wfile.write('OK'.encode('utf-8'))
+                return
+
+
         if self.path == '/process_1':
             process_1(self)
             return

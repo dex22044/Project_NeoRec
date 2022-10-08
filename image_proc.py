@@ -95,7 +95,6 @@ def process_2(serv : BaseHTTPRequestHandler):
         left *= 4
         ans.append({'x':left, 'y':top, 'w':right-left, 'h':bottom-top, 'name':name})
     
-    img_data_ret = cv2.imencode('.jpg', frame)[1]
     serv.send_response(200)
     serv.send_header('Content-Type', 'text/json')
     serv.end_headers()
