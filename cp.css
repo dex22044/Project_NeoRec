@@ -1,0 +1,60 @@
+body {
+    background-color: #272727;
+}
+
+.btn {
+    background-color: #007514;
+
+    border-style: solid;
+    border-color: #00a31b;
+    border-radius: 10px;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.btn:hover {
+    background-color: #009218;
+}
+
+.btn:active {
+    background-color: #00df25;
+}
+
+.btn_text {
+    color: white;
+    margin: 5px;
+}
+
+.loading_spinner {
+    width: calc(0.5em + 10px);
+    height: calc(0.5em + 10px);
+    margin: 0.25em;
+    background-color: transparent;
+    border-color: white;
+    border-style: solid;
+    border-width: 2px;
+    animation-name: spinner_rotation;
+    animation-duration: 0.5s;
+    animation-timing-function: linear;
+    animation-delay: 0s;
+    animation-direction: normal;
+    animation-iteration-count: infinite;
+
+    display: none;
+}
+
+@keyframes spinner_rotation {
+    0% {
+        transform: rotate(0deg);
+        border-radius: 2px;
+    }
+    50% {
+        transform: rotate(180deg);
+        border-radius: 8px;
+    }
+    100% {
+        transform: rotate(360deg);
+        border-radius: 2px;
+    }
+}
