@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">DroneDelivery</string>
+    <string name="server_address">172.25.115.7</string>
+</resources>
