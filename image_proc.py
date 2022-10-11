@@ -14,6 +14,13 @@ def addFace(id, enc):
     known_face_names.append(str(id))
     known_face_encodings.append(enc)
 
+def updateFace(id, enc):
+    id = str(id)
+    if id not in known_face_names:
+        return
+    idddddd = known_face_names.index(id)
+    known_face_encodings[idddddd] = enc
+
 def process_1(serv : BaseHTTPRequestHandler):
     content_length = int(serv.headers['Content-Length'])
     post_data = serv.rfile.read(content_length)
@@ -22,7 +29,7 @@ def process_1(serv : BaseHTTPRequestHandler):
     face_locations = []
     face_encodings = []
     face_names = []
-    small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+    small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
 
     rgb_small_frame = small_frame[:, :, ::-1]
     
@@ -42,11 +49,10 @@ def process_1(serv : BaseHTTPRequestHandler):
         face_names.append(name)
 
     for (top, right, bottom, left), name in zip(face_locations, face_names):
-        top *= 4
-        right *= 4
-        bottom *= 4
-        left *= 4
-
+        top *= 2
+        right *= 2
+        bottom *= 2
+        left *= 2
         cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
         cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
         font = cv2.FONT_HERSHEY_DUPLEX
@@ -67,7 +73,7 @@ def process_2(serv : BaseHTTPRequestHandler):
     face_locations = []
     face_encodings = []
     face_names = []
-    small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+    small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
 
     rgb_small_frame = small_frame[:, :, ::-1]
     
@@ -89,10 +95,10 @@ def process_2(serv : BaseHTTPRequestHandler):
     ans = []
 
     for (top, right, bottom, left), name in zip(face_locations, face_names):
-        top *= 4
-        right *= 4
-        bottom *= 4
-        left *= 4
+        top *= 2
+        right *= 2
+        bottom *= 2
+        left *= 2
         ans.append({'x':left, 'y':top, 'w':right-left, 'h':bottom-top, 'name':name})
     
     serv.send_response(200)
@@ -110,7 +116,7 @@ def getFaceEncoding(serv : BaseHTTPRequestHandler):
     face_encodings = []
     small_frame = cv2.resize(frame, (0, 0), fx=1, fy=1)
     
-    face_encodings = face_recognition.face_encodings(small_frame)
+    face_encodings = face_recognition.face_encodings(small_frame, model = 'small')
 
     if len(face_encodings) != 1:
         serv.send_response(400)

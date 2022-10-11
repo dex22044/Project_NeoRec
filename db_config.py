@@ -1,2 +1,2 @@
-db_username = 'root'
+db_username = 'python'
 db_password = '_Amogus123_'

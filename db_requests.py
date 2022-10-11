@@ -1,7 +1,7 @@
 import struct
 from db_config import *
 import mysql.connector
-from image_proc import addFace
+from image_proc import addFace, updateFace
 import numpy as np
 
 db_connection : mysql.connector.MySQLConnection
@@ -15,7 +15,7 @@ def bytesToEncoding(inp : bytes):
 def connectToDB():
     global db_connection
     db_connection = mysql.connector.connect(
-        host="localhost",
+        host="172.25.115.225",
         user=db_username,
         password=db_password,
         database='big_ochko'
@@ -37,6 +37,13 @@ def registerUser(email, name, password, face_encoding):
     addFace(cursor.lastrowid, bytesToEncoding(face_encoding))
     return cursor.lastrowid
 
+def editUser(uid, name, face_encoding):
+    cursor = db_connection.cursor()
+    sql = "UPDATE users SET fullname = %s, face_encoding = %s WHERE id = " + str(uid)
+    cursor.execute(sql, (name, face_encoding))
+    db_connection.commit()
+    updateFace(uid, bytesToEncoding(face_encoding))
+
 def findUserByEmail(email):
     cursor = db_connection.cursor()
     cursor.execute(f"SELECT * FROM users WHERE (email = \'{email}\')")
@@ -53,6 +60,18 @@ def getUsersIdByEmail(email):
     cursor.execute(f"SELECT id FROM users WHERE (email = \'{email}\')")
     ids = cursor.fetchall()
     return (ids[0][0] if len(ids) != 0 else -1)
+
+def getUserEmailById(id):
+    cursor = db_connection.cursor()
+    cursor.execute(f"SELECT email FROM users WHERE (id = \'{id}\')")
+    ids = cursor.fetchall()
+    return (ids[0][0] if len(ids) != 0 else 'N/A')
+
+def getPostAddrById(id):
+    cursor = db_connection.cursor()
+    cursor.execute(f"SELECT address FROM posts WHERE (id = \'{id}\')")
+    ids = cursor.fetchall()
+    return (ids[0][0] if len(ids) != 0 else 'N/A')
 
 def createDelivery(uid1, uid2, post1, post2, droneId):
     cursor = db_connection.cursor()
@@ -92,6 +111,15 @@ def recvdDelivery(id, postId):
     cursor = db_connection.cursor()
     cursor.execute(f"UPDATE deliveries SET status = 2 WHERE (id = {id} and to_post = {postId} and status = 1)")
     db_connection.commit()
+
+def getUserDeliveries(userId):
+    cursor = db_connection.cursor()
+    cursor.execute(f"SELECT * FROM deliveries WHERE (from_user = {userId} or to_user = {userId})")
+    t = cursor.fetchall()
+    tt = []
+    for i in t:
+        tt.append({'id':i[0], 'email_from':getUserEmailById(i[1]), 'email_to':getUserEmailById(i[2]), 'from_post':getPostAddrById(i[3]), 'to_post':getPostAddrById(i[4]), 'status':i[6]})
+    return tt
 
 
 def closeDB():

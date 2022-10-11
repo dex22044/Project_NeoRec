@@ -8,10 +8,9 @@ import hashlib
 import base64
 import requests
 import ssl
+import socket
 
 connectToDB()
-
-findUserByEmail("a@b.c")
 
 postTokens = [
     'AMNKJgii34ohtfio3rmnwiuhcJOPHBUIVNUWREFJo34guytif'
@@ -66,6 +65,29 @@ class HttpHandler(BaseHTTPRequestHandler):
                     self.wfile.write('User already exists\r\n'.encode('utf-8'))
                     return
                 uid = registerUser(email, fullname, password, faceEncoding)
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(str(uid).encode('utf-8'))
+                return
+        if self.path == '/edit_user':
+            content_length = int(self.headers['Content-Length'])
+            retdata = self.rfile.read(content_length)
+            rcvData = retdata.decode('utf-8').strip().split(';')
+            print(rcvData)
+            if len(rcvData) == 4:
+                email = base64.b64decode(rcvData[0]).decode('utf-8')
+                password = base64.b64decode(rcvData[1]).decode('utf-8')
+                fullname = base64.b64decode(rcvData[2]).decode('utf-8')
+                faceEncoding = base64.b64decode(rcvData[3])
+                uid = getUsersIdByEmailAndPassword(email, password)
+                if uid == -1:
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'text/plain')
+                    self.end_headers()
+                    self.wfile.write('Wrong email or password\r\n'.encode('utf-8'))
+                    return
+                editUser(uid, fullname, faceEncoding)
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/plain')
                 self.end_headers()
@@ -135,6 +157,28 @@ class HttpHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-Type', 'text/plain')
                 self.end_headers()
                 self.wfile.write(str(delId).encode('utf-8'))
+                return
+        if self.path == '/get_delivery_statuses':
+            content_length = int(self.headers['Content-Length'])
+            retdata = self.rfile.read(content_length)
+            rcvData = retdata.decode('utf-8').strip().split(';')
+            print(rcvData)
+            if len(rcvData) == 2:
+                email = base64.b64decode(rcvData[0]).decode('utf-8')
+                password = base64.b64decode(rcvData[1]).decode('utf-8')
+                print(email, password)
+                uid = getUsersIdByEmailAndPassword(email, password)
+                if uid == -1:
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'text/plain')
+                    self.end_headers()
+                    self.wfile.write('Wrong email or password\r\n'.encode('utf-8'))
+                    return
+                ans = getUserDeliveries(uid)
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(JSONEncoder().encode(ans).encode('utf-8'))
                 return
 
 
